@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Avaliação Online</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        iframe {
+            width: 100%;
+            height: calc(100% - 50px);
+            border: none;
+        }
+
+        #cronometro {
+            background-color: #222;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            font-size: 18px;
+        }
+
+        #alerta {
+            display: none;
+            position: absolute;
+            top: 50px;
+            width: 100%;
+            background-color: #d32f2f;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cronometro">Tempo restante: 120:00</div>
+    <div id="alerta">⚠️ Você saiu da aba da prova. Penalização de 15 minutos aplicada.</div>
+
+    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfDKdBpoi8UuN4pRAO14jS68ErVW7T3bdx91qJQ8QrmMWQHiA/viewform?embedded=true">Carregando…</iframe>
+
+    <script>
+        // Entrar em tela cheia
+        function entrarEmTelaCheia() {
+            const el = document.documentElement;
+            if (el.requestFullscreen) {
+                el.requestFullscreen();
+            } else if (el.mozRequestFullScreen) {
+                el.mozRequestFullScreen();
+            } else if (el.webkitRequestFullscreen) {
+                el.webkitRequestFullscreen();
+            } else if (el.msRequestFullscreen) {
+                el.msRequestFullscreen();
+            }
+        }
+
+        // Cronômetro de 120 minutos (7200 segundos)
+        let tempoRestante = 120 * 60;
+        const cronometro = document.getElementById("cronometro");
+        let intervaloCronometro; // Variável para armazenar o ID do intervalo do cronômetro
+
+        function atualizarCronometro() {
+            const minutos = Math.floor(tempoRestante / 60);
+            const segundos = tempoRestante % 60;
+            cronometro.textContent = `Tempo restante: ${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+            if (tempoRestante > 0) {
+                tempoRestante--;
+            } else {
+                // Tempo acabou!
+                clearInterval(intervaloCronometro); // Para a atualização do cronômetro
+                // Tenta fechar a janela/aba
+                window.close();
+                // Em alguns navegadores, window.close() pode não funcionar
+                // ou pode solicitar confirmação do usuário.
+                // Como fallback, você pode tentar redirecionar para uma página em branco:
+                // window.location.href = 'about:blank';
+            }
+        }
+
+        // Inicia o cronômetro
+        intervaloCronometro = setInterval(atualizarCronometro, 1000);
+
+        // Penalidade ao sair da aba
+        document.addEventListener("visibilitychange", function () {
+            const alerta = document.getElementById("alerta");
+            if (document.hidden) {
+                alerta.style.display = "block";
+                // Penaliza 15 minutos (900 segundos)
+                tempoRestante = Math.max(tempoRestante - 900, 0);
+            } else {
+                alerta.style.display = "none";
+            }
+        });
+
+        // Ao carregar a página
+        window.onload = function () {
+            entrarEmTelaCheia();
+            atualizarCronometro();
+        };
+    </script>
+
+</body>
+</html>
