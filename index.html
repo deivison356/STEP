@@ -48,7 +48,6 @@
     <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfTH8OBK_0T3HNO9CqTGqKSjXcjxpKJJ0PImnJceY6R7usQ-A/viewform?embedded=true">Carregando…</iframe>
 
     <script>
-        // Entrar em tela cheia
         function entrarEmTelaCheia() {
             const el = document.documentElement;
             if (el.requestFullscreen) {
@@ -62,7 +61,6 @@
             }
         }
 
-        // Cronômetro de 90 minutos (5400 segundos)
         let tempoRestante = 90 * 60;
         const cronometro = document.getElementById("cronometro");
         let intervaloCronometro;
@@ -76,33 +74,41 @@
             } else {
                 clearInterval(intervaloCronometro);
                 window.close();
+                // window.location.href = 'about:blank'; // Fallback opcional
             }
         }
 
-        // Inicia o cronômetro
         intervaloCronometro = setInterval(atualizarCronometro, 1000);
 
         let saiuDaAba = false;
+        let contadorSaidas = 0;
 
-        // Penalidade ao sair da aba
         document.addEventListener("visibilitychange", function () {
             const alerta = document.getElementById("alerta");
+
             if (document.hidden) {
+                contadorSaidas++;
                 alerta.style.display = "block";
-                // Penaliza 30 minutos (1800 segundos)
-                tempoRestante = Math.max(tempoRestante - 1800, 0);
-                saiuDaAba = true;
+
+                if (contadorSaidas < 3) {
+                    tempoRestante = Math.max(tempoRestante - 1800, 0);
+                    saiuDaAba = true;
+                } else {
+                    tempoRestante = 0;
+                    clearInterval(intervaloCronometro);
+                    alert("⚠️ Você saiu da aba pela terceira vez. A prova foi encerrada.");
+                    window.close();
+                    // window.location.href = 'about:blank'; // Fallback opcional
+                }
             } else {
-                if (saiuDaAba) {
+                if (saiuDaAba && contadorSaidas < 3) {
                     alerta.style.display = "none";
-                    // Mostra confirmação
-                    const confirmado = confirm("⚠️ Você saiu da aba da prova. A penalização de 30 minutos foi aplicada.\nClique em OK para confirmar que está ciente.");
+                    confirm(`⚠️ Você saiu da aba da prova. A penalização de 30 minutos foi aplicada.\nEsta foi a ${contadorSaidas}ª vez.\nClique em OK para confirmar que está ciente.`);
                     saiuDaAba = false;
                 }
             }
         });
 
-        // Ao carregar a página
         window.onload = function () {
             entrarEmTelaCheia();
             atualizarCronometro();
@@ -111,3 +117,4 @@
 
 </body>
 </html>
+
