@@ -42,8 +42,8 @@
 </head>
 <body>
 
-    <div id="cronometro">Tempo restante: 120:00</div>
-    <div id="alerta">⚠️ Você saiu da aba da prova. Penalização de 15 minutos aplicada.</div>
+    <div id="cronometro">Tempo restante: 90:00</div>
+    <div id="alerta">⚠️ Você saiu da aba da prova. Penalização de 30 minutos aplicada.</div>
 
     <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfDKdBpoi8UuN4pRAO14jS68ErVW7T3bdx91qJQ8QrmMWQHiA/viewform?embedded=true">Carregando…</iframe>
 
@@ -62,8 +62,8 @@
             }
         }
 
-        // Cronômetro de 120 minutos (7200 segundos)
-        let tempoRestante = 120 * 60;
+        // Cronômetro de 90 minutos (5400 segundos)
+        let tempoRestante = 90 * 60;
         const cronometro = document.getElementById("cronometro");
         let intervaloCronometro; // Variável para armazenar o ID do intervalo do cronômetro
 
@@ -74,14 +74,9 @@
             if (tempoRestante > 0) {
                 tempoRestante--;
             } else {
-                // Tempo acabou!
-                clearInterval(intervaloCronometro); // Para a atualização do cronômetro
-                // Tenta fechar a janela/aba
+                clearInterval(intervaloCronometro);
                 window.close();
-                // Em alguns navegadores, window.close() pode não funcionar
-                // ou pode solicitar confirmação do usuário.
-                // Como fallback, você pode tentar redirecionar para uma página em branco:
-                // window.location.href = 'about:blank';
+                // window.location.href = 'about:blank'; // Fallback opcional
             }
         }
 
@@ -93,8 +88,8 @@
             const alerta = document.getElementById("alerta");
             if (document.hidden) {
                 alerta.style.display = "block";
-                // Penaliza 15 minutos (900 segundos)
-                tempoRestante = Math.max(tempoRestante - 900, 0);
+                // Penaliza 30 minutos (1800 segundos)
+                tempoRestante = Math.max(tempoRestante - 1800, 0);
             } else {
                 alerta.style.display = "none";
             }
