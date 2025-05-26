@@ -26,7 +26,7 @@
             font-size: 18px;
         }
 
-        #alerta {
+        #alerta, #alertaTempo {
             display: none;
             position: absolute;
             top: 50px;
@@ -43,7 +43,8 @@
 <body>
 
     <div id="cronometro">Tempo restante: 90:00</div>
-    <div id="alerta">⚠️ Você saiu da aba da prova. Penalização de 30 minutos aplicada.</div>
+    <div id="alerta">⚠️ Você saiu da aba ou da tela cheia. Penalização de 30 minutos aplicada.</div>
+    <div id="alertaTempo">⚠️ Faltam apenas 20 minutos para o término da prova.</div>
 
     <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfTH8OBK_0T3HNO9CqTGqKSjXcjxpKJJ0PImnJceY6R7usQ-A/viewform?embedded=true">Carregando…</iframe>
 
@@ -61,60 +62,58 @@
             }
         }
 
-        let tempoRestante = 90 * 60;
-        const cronometro = document.getElementById("cronometro");
-        let intervaloCronometro;
-
-        function atualizarCronometro() {
-            const minutos = Math.floor(tempoRestante / 60);
-            const segundos = tempoRestante % 60;
-            cronometro.textContent = `Tempo restante: ${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
-            if (tempoRestante > 0) {
-                tempoRestante--;
-            } else {
-                clearInterval(intervaloCronometro);
-                window.close();
-                // window.location.href = 'about:blank'; // Fallback opcional
+        function verificarSaidaTelaCheia() {
+            if (!document.fullscreenElement &&
+                !document.mozFullScreenElement &&
+                !document.webkitFullscreenElement &&
+                !document.msFullscreenElement) {
+                aplicarPenalizacao();
             }
         }
 
-        intervaloCronometro = setInterval(atualizarCronometro, 1000);
+        let tempoRestante = 90 * 60;
+        const cronometro = document.getElementById("cronometro");
+        const alerta = document.getElementById("alerta");
+        const alertaTempo = document.getElementById("alertaTempo");
+        let intervaloCronometro;
 
         let saiuDaAba = false;
         let contadorSaidas = 0;
 
-        document.addEventListener("visibilitychange", function () {
-            const alerta = document.getElementById("alerta");
+        function atualizarCronometro() {
+            const minutos = Math.floor(tempoRestante / 60);
+            const segundos = tempoRestante % 60;
 
-            if (document.hidden) {
-                contadorSaidas++;
-                alerta.style.display = "block";
+            cronometro.textContent = `Tempo restante: ${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
 
-                if (contadorSaidas < 3) {
-                    tempoRestante = Math.max(tempoRestante - 1800, 0);
-                    saiuDaAba = true;
-                } else {
-                    tempoRestante = 0;
-                    clearInterval(intervaloCronometro);
-                    alert("⚠️ Você saiu da aba pela terceira vez. A prova foi encerrada.");
-                    window.close();
-                    // window.location.href = 'about:blank'; // Fallback opcional
-                }
-            } else {
-                if (saiuDaAba && contadorSaidas < 3) {
-                    alerta.style.display = "none";
-                    confirm(`⚠️ Você saiu da aba da prova. A penalização de 30 minutos foi aplicada.\nEsta foi a ${contadorSaidas}ª vez.\nClique em OK para confirmar que está ciente.`);
-                    saiuDaAba = false;
-                }
+            // Alerta para os últimos 20 minutos
+            if (tempoRestante === 20 * 60) {
+                alertaTempo.style.display = "block";
             }
-        });
 
-        window.onload = function () {
-            entrarEmTelaCheia();
-            atualizarCronometro();
-        };
-    </script>
+            if (tempoRestante > 0) {
+                tempoRestante--;
+            } else {
+                clearInterval(intervaloCronometro);
+                alert("⏰ Tempo esgotado. A prova será encerrada.");
+                window.close();
+            }
+        }
 
-</body>
-</html>
+        function aplicarPenalizacao() {
+            contadorSaidas++;
+            alerta.style.display = "block";
+
+            if (contadorSaidas < 3) {
+                tempoRestante = Math.max(tempoRestante - 1800, 0);
+                saiuDaAba = true;
+            } else {
+                tempoRestante = 0;
+                clearInterval(intervaloCronometro);
+                alert("⚠️ Você saiu da aba ou da tela cheia pela terceira vez. A prova foi encerrada.");
+                window.close();
+            }
+        }
+
+        document.addEventListener("visibilitychange", function () {
 
