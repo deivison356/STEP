@@ -12,12 +12,6 @@
             font-family: Arial, sans-serif;
         }
 
-        iframe {
-            width: 100%;
-            height: calc(100% - 50px);
-            border: none;
-        }
-
         #cronometro {
             background-color: #222;
             color: #fff;
@@ -38,17 +32,51 @@
             font-weight: bold;
             z-index: 9999;
         }
+
+        iframe {
+            width: 100%;
+            height: calc(100% - 50px);
+            border: none;
+            display: none;
+        }
+
+        #iniciar {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            padding: 20px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
 
     <div id="cronometro">Tempo restante: 90:00</div>
-    <div id="alerta">⚠️ Você saiu da aba ou da tela cheia. Penalização de 30 minutos aplicada.</div>
+    <div id="alerta">⚠️ Você saiu da aba ou saiu da tela cheia. Penalização de 30 minutos aplicada.</div>
     <div id="alertaTempo">⚠️ Faltam apenas 20 minutos para o término da prova.</div>
 
-    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfTH8OBK_0T3HNO9CqTGqKSjXcjxpKJJ0PImnJceY6R7usQ-A/viewform?embedded=true">Carregando…</iframe>
+    <iframe id="form" src="https://docs.google.com/forms/d/e/1FAIpQLSfTH8OBK_0T3HNO9CqTGqKSjXcjxpKJJ0PImnJceY6R7usQ-A/viewform?embedded=true"></iframe>
+
+    <button id="iniciar">Clique aqui para Iniciar a Prova</button>
 
     <script>
+        let tempoRestante = 90 * 60;
+        let intervaloCronometro;
+        let saiuDaAba = false;
+        let contadorSaidas = 0;
+
+        const cronometro = document.getElementById("cronometro");
+        const alerta = document.getElementById("alerta");
+        const alertaTempo = document.getElementById("alertaTempo");
+        const iniciarBtn = document.getElementById("iniciar");
+        const iframe = document.getElementById("form");
+
         function entrarEmTelaCheia() {
             const el = document.documentElement;
             if (el.requestFullscreen) {
@@ -62,31 +90,12 @@
             }
         }
 
-        function verificarSaidaTelaCheia() {
-            if (!document.fullscreenElement &&
-                !document.mozFullScreenElement &&
-                !document.webkitFullscreenElement &&
-                !document.msFullscreenElement) {
-                aplicarPenalizacao();
-            }
-        }
-
-        let tempoRestante = 90 * 60;
-        const cronometro = document.getElementById("cronometro");
-        const alerta = document.getElementById("alerta");
-        const alertaTempo = document.getElementById("alertaTempo");
-        let intervaloCronometro;
-
-        let saiuDaAba = false;
-        let contadorSaidas = 0;
-
         function atualizarCronometro() {
             const minutos = Math.floor(tempoRestante / 60);
             const segundos = tempoRestante % 60;
 
             cronometro.textContent = `Tempo restante: ${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
 
-            // Alerta para os últimos 20 minutos
             if (tempoRestante === 20 * 60) {
                 alertaTempo.style.display = "block";
             }
@@ -96,24 +105,53 @@
             } else {
                 clearInterval(intervaloCronometro);
                 alert("⏰ Tempo esgotado. A prova será encerrada.");
-                window.close();
+                location.href = 'about:blank';  // Mais confiável que window.close()
             }
         }
 
         function aplicarPenalizacao() {
             contadorSaidas++;
             alerta.style.display = "block";
-
             if (contadorSaidas < 3) {
                 tempoRestante = Math.max(tempoRestante - 1800, 0);
                 saiuDaAba = true;
             } else {
                 tempoRestante = 0;
                 clearInterval(intervaloCronometro);
-                alert("⚠️ Você saiu da aba ou da tela cheia pela terceira vez. A prova foi encerrada.");
-                window.close();
+                alert("⚠️ Você saiu da aba ou da tela cheia 3 vezes. A prova foi encerrada.");
+                location.href = 'about:blank';
             }
         }
+
+        document.addEventListener("visibilitychange", function () {
+            if (document.hidden) {
+                aplicarPenalizacao();
+            } else {
+                if (saiuDaAba && contadorSaidas < 3) {
+                    alerta.style.display = "none";
+                    confirm(`⚠️ Penalização aplicada.\nEsta foi a ${contadorSaidas}ª vez.\nClique em OK para continuar.`);
+                    saiuDaAba = false;
+                }
+            }
+        });
+
+        document.addEventListener("fullscreenchange", function () {
+            if (!document.fullscreenElement) {
+                aplicarPenalizacao();
+            }
+        });
+
+        iniciarBtn.addEventListener("click", function () {
+            iniciarBtn.style.display = 'none';
+            iframe.style.display = 'block';
+            entrarEmTelaCheia();
+            atualizarCronometro();
+            intervaloCronometro = setInterval(atualizarCronometro, 1000);
+        });
+    </script>
+
+</body>
+</html>
 
         document.addEventListener("visibilitychange", function () {
 
