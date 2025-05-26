@@ -105,37 +105,4 @@
             } else {
                 clearInterval(intervaloCronometro);
                 alert("⏰ Tempo esgotado. A prova será encerrada.");
-                location.href = 'about:blank';
-            }
-        }
-
-        function aplicarPenalizacao() {
-            contadorSaidas++;
-            alerta.style.display = "block";
-            if (contadorSaidas < 3) {
-                tempoRestante = Math.max(tempoRestante - 1800, 0);
-                saiuDaAba = true;
-            } else {
-                tempoRestante = 0;
-                clearInterval(intervaloCronometro);
-                alert("⚠️ Você saiu da aba ou da tela cheia 3 vezes. A prova foi encerrada.");
-                location.href = 'about:blank';
-            }
-        }
-
-        document.addEventListener("visibilitychange", function () {
-            if (document.hidden) {
-                aplicarPenalizacao();
-            } else {
-                if (saiuDaAba && contadorSaidas < 3) {
-                    alerta.style.display = "none";
-                    confirm(`⚠️ Penalização aplicada.\nEsta foi a ${contadorSaidas}ª vez.\nClique em OK para continuar.`);
-                    saiuDaAba = false;
-                }
-            }
-        });
-
-        document.addEventListener("fullscreenchange", function () {
-            if (!docum
-
-
+                // window.close(); // Melhor evitar para não ser bloqueado
