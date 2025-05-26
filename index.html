@@ -10,7 +10,6 @@
             height: 100%;
             overflow: hidden;
             font-family: Arial, sans-serif;
-            background: #f5f5f5;
         }
 
         #cronometro {
@@ -21,7 +20,7 @@
             font-size: 18px;
         }
 
-        #alerta, #alertaTempo, #mensagem {
+        #alerta, #alertaTempo {
             display: none;
             position: absolute;
             top: 50px;
@@ -59,9 +58,8 @@
 <body>
 
     <div id="cronometro">Tempo restante: 90:00</div>
-    <div id="alerta">⚠️ Você saiu da aba ou da tela cheia. Penalização de 30 minutos aplicada.</div>
+    <div id="alerta">⚠️ Você saiu da aba ou saiu da tela cheia. Penalização de 30 minutos aplicada.</div>
     <div id="alertaTempo">⚠️ Faltam apenas 20 minutos para o término da prova.</div>
-    <div id="mensagem"></div>
 
     <iframe id="form" src="https://docs.google.com/forms/d/e/1FAIpQLSfTH8OBK_0T3HNO9CqTGqKSjXcjxpKJJ0PImnJceY6R7usQ-A/viewform?embedded=true"></iframe>
 
@@ -78,15 +76,17 @@
         const alertaTempo = document.getElementById("alertaTempo");
         const iniciarBtn = document.getElementById("iniciar");
         const iframe = document.getElementById("form");
-        const mensagem = document.getElementById("mensagem");
 
         function entrarEmTelaCheia() {
             const el = document.documentElement;
             if (el.requestFullscreen) {
-                el.requestFullscreen().catch(err => {
-                    mensagem.style.display = "block";
-                    mensagem.innerText = "⚠️ Não foi possível ativar o modo tela cheia.";
-                });
+                el.requestFullscreen();
+            } else if (el.mozRequestFullScreen) {
+                el.mozRequestFullScreen();
+            } else if (el.webkitRequestFullscreen) {
+                el.webkitRequestFullscreen();
+            } else if (el.msRequestFullscreen) {
+                el.msRequestFullscreen();
             }
         }
 
@@ -104,24 +104,22 @@
                 tempoRestante--;
             } else {
                 clearInterval(intervaloCronometro);
-                mensagem.style.display = "block";
-                mensagem.innerText = "⏰ Tempo esgotado. A prova foi encerrada.";
-                setTimeout(() => location.href = 'about:blank', 3000);
+                alert("⏰ Tempo esgotado. A prova será encerrada.");
+                location.href = 'about:blank';  // Mais confiável que window.close()
             }
         }
 
         function aplicarPenalizacao() {
             contadorSaidas++;
             alerta.style.display = "block";
-
             if (contadorSaidas < 3) {
                 tempoRestante = Math.max(tempoRestante - 1800, 0);
                 saiuDaAba = true;
             } else {
+                tempoRestante = 0;
                 clearInterval(intervaloCronometro);
-                mensagem.style.display = "block";
-                mensagem.innerText = "⚠️ Saiu da aba ou da tela cheia 3 vezes. A prova foi encerrada.";
-                setTimeout(() => location.href = 'about:blank', 3000);
+                alert("⚠️ Você saiu da aba ou da tela cheia 3 vezes. A prova foi encerrada.");
+                location.href = 'about:blank';
             }
         }
 
@@ -131,9 +129,7 @@
             } else {
                 if (saiuDaAba && contadorSaidas < 3) {
                     alerta.style.display = "none";
-                    mensagem.style.display = "block";
-                    mensagem.innerText = `⚠️ Penalização aplicada (${contadorSaidas}ª vez).`;
-                    setTimeout(() => mensagem.style.display = "none", 3000);
+                    confirm(`⚠️ Penalização aplicada.\nEsta foi a ${contadorSaidas}ª vez.\nClique em OK para continuar.`);
                     saiuDaAba = false;
                 }
             }
@@ -149,25 +145,8 @@
             iniciarBtn.style.display = 'none';
             iframe.style.display = 'block';
             entrarEmTelaCheia();
-
+            atualizarCronometro();
             intervaloCronometro = setInterval(atualizarCronometro, 1000);
-        });
-
-        // Bloqueia botão direito
-        document.addEventListener('contextmenu', event => event.preventDefault());
-
-        // Bloqueia F12, Ctrl+U, Ctrl+Shift+I/J
-        document.addEventListener('keydown', function (e) {
-            if (
-                e.key === "F12" ||
-                (e.ctrlKey && e.key.toLowerCase() === 'u') ||
-                (e.ctrlKey && e.shiftKey && ['i','j'].includes(e.key.toLowerCase()))
-            ) {
-                e.preventDefault();
-                mensagem.style.display = "block";
-                mensagem.innerText = "⚠️ Esta função está desabilitada durante a prova.";
-                setTimeout(() => mensagem.style.display = "none", 3000);
-            }
         });
     </script>
 
