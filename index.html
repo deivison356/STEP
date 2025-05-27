@@ -5,20 +5,78 @@
     <title>Prova Online</title>
     <style>
         html, body {
-            margin: 0; padding: 0; height: 100%; overflow: hidden;
-            font-family: Arial, sans-serif; background: #f5f5f5;
-            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            font-family: Arial, sans-serif; 
+            background: #f5f5f5; 
         }
-        input, button {
-            padding: 10px; font-size: 16px; margin: 5px;
-        }
+
         #cronometro, #alerta, #alertaTempo, #mensagem {
-            display: none; position: absolute; top: 10px; width: 100%;
-            background-color: #d32f2f; color: white; text-align: center; padding: 10px; font-weight: bold; z-index: 9999;
+            display: none; 
+            position: fixed; /* fixo para não sair da tela */
+            top: 0; 
+            left: 0;
+            width: 100%;
+            background-color: #d32f2f; 
+            color: white; 
+            text-align: center; 
+            padding: 10px; 
+            font-weight: bold; 
+            z-index: 9999;
         }
-        #cronometro { background-color: #222; top: 0; }
+
+        #cronometro {
+            background-color: #222; 
+            top: 0; 
+        }
+
+        #acesso {
+            width: 100%;
+            max-width: 600px; /* limite máximo para não ficar muito largo */
+            margin: 80px auto 40px auto;
+            padding: 20px;
+            background: white;
+            box-sizing: border-box;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        input, button {
+            padding: 10px; 
+            font-size: 16px; 
+            margin: 5px;
+            width: 80%; /* para o input não ficar muito pequeno */
+            max-width: 400px;
+            box-sizing: border-box;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        #iniciar {
+            display: none;
+            margin: 20px auto;
+            display: block;
+            font-size: 18px;
+            padding: 12px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            max-width: 200px;
+            text-align: center;
+        }
+
         #iframeProva {
-            width: 100%; height: calc(100% - 50px); border: none; display: none;
+            width: 100%;
+            height: calc(100vh - 60px); /* altura da tela menos espaço para cronômetro */
+            border: none;
+            display: none;
+            margin-top: 60px; /* para não ficar atrás do cronômetro */
         }
     </style>
 </head>
@@ -35,7 +93,7 @@
     <button onclick="validarSenha()">Iniciar Prova</button>
 </div>
 
-<button id="iniciar" style="display:none;">Clique aqui para Iniciar a Prova</button>
+<button id="iniciar">Clique aqui para Iniciar a Prova</button>
 
 <iframe id="iframeProva" src="https://docs.google.com/forms/d/e/1FAIpQLSfTH8OBK_0T3HNO9CqTGqKSjXcjxpKJJ0PImnJceY6R7usQ-A/viewform?embedded=true"></iframe>
 
