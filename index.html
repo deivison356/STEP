@@ -83,7 +83,7 @@
         function entrarEmTelaCheia() {
             const el = document.documentElement;
             if (el.requestFullscreen) {
-                el.requestFullscreen().catch(err => {
+                el.requestFullscreen().catch(() => {
                     mensagem.style.display = "block";
                     mensagem.innerText = "⚠️ Não foi possível ativar o modo tela cheia.";
                 });
@@ -98,15 +98,13 @@
 
             if (tempoRestante === 20 * 60) {
                 alertaTempo.style.display = "block";
+                tocarAlertaSonoro();
             }
 
             if (tempoRestante > 0) {
                 tempoRestante--;
             } else {
-                clearInterval(intervaloCronometro);
-                mensagem.style.display = "block";
-                mensagem.innerText = "⏰ Tempo esgotado. A prova foi encerrada.";
-                setTimeout(() => location.href = 'about:blank', 3000);
+                finalizarProva("⏰ Tempo esgotado. A prova foi encerrada.");
             }
         }
 
@@ -118,38 +116,44 @@
                 tempoRestante = Math.max(tempoRestante - 1800, 0);
                 saiuDaAba = true;
             } else {
-                clearInterval(intervaloCronometro);
-                mensagem.style.display = "block";
-                mensagem.innerText = "⚠️ Saiu da aba ou da tela cheia 3 vezes. A prova foi encerrada.";
-                setTimeout(() => location.href = 'about:blank', 3000);
+                finalizarProva("⚠️ Saiu da aba ou da tela cheia 3 vezes. A prova foi encerrada.");
             }
         }
 
-        document.addEventListener("visibilitychange", function () {
+        function finalizarProva(msg) {
+            clearInterval(intervaloCronometro);
+            mensagem.style.display = "block";
+            mensagem.innerText = msg;
+            setTimeout(() => location.href = 'about:blank', 5000);
+        }
+
+        function tocarAlertaSonoro() {
+            const beep = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=");
+            beep.play();
+        }
+
+        document.addEventListener("visibilitychange", () => {
             if (document.hidden) {
                 aplicarPenalizacao();
-            } else {
-                if (saiuDaAba && contadorSaidas < 3) {
-                    alerta.style.display = "none";
-                    mensagem.style.display = "block";
-                    mensagem.innerText = `⚠️ Penalização aplicada (${contadorSaidas}ª vez).`;
-                    setTimeout(() => mensagem.style.display = "none", 3000);
-                    saiuDaAba = false;
-                }
+            } else if (saiuDaAba && contadorSaidas < 3) {
+                alerta.style.display = "none";
+                mensagem.style.display = "block";
+                mensagem.innerText = `⚠️ Penalização aplicada (${contadorSaidas}ª vez).`;
+                setTimeout(() => mensagem.style.display = "none", 3000);
+                saiuDaAba = false;
             }
         });
 
-        document.addEventListener("fullscreenchange", function () {
+        document.addEventListener("fullscreenchange", () => {
             if (!document.fullscreenElement) {
                 aplicarPenalizacao();
             }
         });
 
-        iniciarBtn.addEventListener("click", function () {
+        iniciarBtn.addEventListener("click", () => {
             iniciarBtn.style.display = 'none';
             iframe.style.display = 'block';
             entrarEmTelaCheia();
-
             intervaloCronometro = setInterval(atualizarCronometro, 1000);
         });
 
@@ -161,13 +165,19 @@
             if (
                 e.key === "F12" ||
                 (e.ctrlKey && e.key.toLowerCase() === 'u') ||
-                (e.ctrlKey && e.shiftKey && ['i','j'].includes(e.key.toLowerCase()))
+                (e.ctrlKey && e.shiftKey && ['i', 'j'].includes(e.key.toLowerCase()))
             ) {
                 e.preventDefault();
                 mensagem.style.display = "block";
                 mensagem.innerText = "⚠️ Esta função está desabilitada durante a prova.";
                 setTimeout(() => mensagem.style.display = "none", 3000);
             }
+        });
+
+        // Alerta ao tentar fechar ou recarregar
+        window.addEventListener('beforeunload', function (e) {
+            e.preventDefault();
+            e.returnValue = '';
         });
     </script>
 
