@@ -14,7 +14,7 @@
 
         #cronometro, #alerta, #alertaTempo, #mensagem {
             display: none; 
-            position: fixed; /* fixo para não sair da tela */
+            position: fixed;
             top: 0; 
             left: 0;
             width: 100%;
@@ -33,7 +33,7 @@
 
         #acesso {
             width: 100%;
-            max-width: 600px; /* limite máximo para não ficar muito largo */
+            max-width: 600px;
             margin: 80px auto 40px auto;
             padding: 20px;
             background: white;
@@ -47,36 +47,27 @@
             padding: 10px; 
             font-size: 16px; 
             margin: 5px;
-            width: 80%; /* para o input não ficar muito pequeno */
+            width: 80%;
             max-width: 400px;
             box-sizing: border-box;
         }
 
         button {
             cursor: pointer;
-        }
-
-        #iniciar {
-            display: none;
-            margin: 20px auto;
-            display: block;
-            font-size: 18px;
-            padding: 12px 20px;
             background-color: #007bff;
             color: white;
             border: none;
             border-radius: 6px;
-            cursor: pointer;
-            max-width: 200px;
-            text-align: center;
+            font-size: 18px;
+            padding: 12px 20px;
         }
 
         #iframeProva {
             width: 100%;
-            height: calc(100vh - 60px); /* altura da tela menos espaço para cronômetro */
+            height: calc(100vh - 60px);
             border: none;
             display: none;
-            margin-top: 60px; /* para não ficar atrás do cronômetro */
+            margin-top: 60px;
         }
     </style>
 </head>
@@ -93,8 +84,6 @@
     <button onclick="validarSenha()">Iniciar Prova</button>
 </div>
 
-<button id="iniciar">Clique aqui para Iniciar a Prova</button>
-
 <iframe id="iframeProva" src="https://docs.google.com/forms/d/e/1FAIpQLSfTH8OBK_0T3HNO9CqTGqKSjXcjxpKJJ0PImnJceY6R7usQ-A/viewform?embedded=true"></iframe>
 
 <script>
@@ -106,7 +95,6 @@
     const cronometro = document.getElementById("cronometro");
     const alerta = document.getElementById("alerta");
     const alertaTempo = document.getElementById("alertaTempo");
-    const iniciarBtn = document.getElementById("iniciar");
     const iframe = document.getElementById("iframeProva");
     const mensagem = document.getElementById("mensagem");
     const acesso = document.getElementById("acesso");
@@ -120,8 +108,19 @@
         const senhaCorreta = dia + mes + ano;
 
         if (senhaDigitada === senhaCorreta) {
+            // Esconde o formulário de acesso
             acesso.style.display = 'none';
-            iniciarBtn.style.display = 'block';
+
+            // Exibe o iframe e cronômetro
+            iframe.style.display = 'block';
+            cronometro.style.display = 'block';
+
+            // Entra em tela cheia
+            entrarEmTelaCheia();
+
+            // Inicia o cronômetro
+            intervaloCronometro = setInterval(atualizarCronometro, 1000);
+
         } else {
             alert('Senha incorreta!');
         }
@@ -171,7 +170,6 @@
         cronometro.style.display = 'none';
         alerta.style.display = 'none';
         alertaTempo.style.display = 'none';
-        iniciarBtn.style.display = 'none';
         mensagem.style.display = 'block';
         mensagem.innerText = "Prova encerrada por tentativa de fraude.";
 
@@ -200,14 +198,7 @@
         }
     });
 
-    iniciarBtn.addEventListener("click", () => {
-        iniciarBtn.style.display = 'none';
-        iframe.style.display = 'block';
-        cronometro.style.display = 'block';
-        entrarEmTelaCheia();
-        intervaloCronometro = setInterval(atualizarCronometro, 1000);
-    });
-
+    // Bloquear contexto e teclas específicas
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.addEventListener('keydown', function (e) {
         if (
