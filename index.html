@@ -12,14 +12,15 @@
             font-family: Arial, sans-serif;
             background: #f5f5f5;
         }
+
         #cronometro {
             background-color: #222;
             color: #fff;
             text-align: center;
             padding: 10px;
             font-size: 18px;
-            display: none;
         }
+
         #alerta, #alertaTempo, #mensagem {
             display: none;
             position: absolute;
@@ -32,12 +33,14 @@
             font-weight: bold;
             z-index: 9999;
         }
+
         iframe {
             width: 100%;
             height: calc(100% - 50px);
             border: none;
             display: none;
         }
+
         #iniciar {
             position: absolute;
             top: 40%;
@@ -50,49 +53,23 @@
             border: none;
             cursor: pointer;
             border-radius: 10px;
+        }
+
+        #bloqueioFinal {
             display: none;
-        }
-        #senhaBox {
-            position: absolute;
-            top: 40%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
-        }
-        #senhaInput {
-            padding: 10px;
-            width: 100%;
-            margin-top: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-        #confirmarSenha {
-            margin-top: 10px;
-            padding: 10px;
-            background: #007bff;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
             color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        #erroSenha {
-            color: red;
-            display: none;
-            margin-top: 10px;
+            font-size: 24px;
+            text-align: center;
+            padding-top: 20%;
+            z-index: 10000;
         }
     </style>
 </head>
 <body>
-
-    <div id="senhaBox">
-        <h3>Digite a senha para acessar a prova:</h3>
-        <input type="password" id="senhaInput">
-        <button id="confirmarSenha">Confirmar</button>
-        <div id="erroSenha">Senha incorreta!</div>
-    </div>
 
     <div id="cronometro">Tempo restante: 90:00</div>
     <div id="alerta">⚠️ Você saiu da aba ou da tela cheia. Penalização de 30 minutos aplicada.</div>
@@ -103,44 +80,21 @@
 
     <button id="iniciar">Clique aqui para Iniciar a Prova</button>
 
+    <div id="bloqueioFinal">⚠️ Prova encerrada. Contate o responsável.</div>
+
     <script>
-        // Gera senha com data atual DDMMAAAA
-        const hoje = new Date();
-        const dia = String(hoje.getDate()).padStart(2, '0');
-        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-        const ano = hoje.getFullYear();
-        const senhaCorreta = `${dia}${mes}${ano}`;
-
-        const senhaBox = document.getElementById("senhaBox");
-        const senhaInput = document.getElementById("senhaInput");
-        const confirmarSenha = document.getElementById("confirmarSenha");
-        const iniciarBtn = document.getElementById("iniciar");
-        const erroSenha = document.getElementById("erroSenha");
-
-        confirmarSenha.addEventListener("click", function() {
-            if (senhaInput.value === senhaCorreta) {
-                senhaBox.style.display = "none";
-                iniciarBtn.style.display = "block";
-            } else {
-                erroSenha.style.display = "block";
-            }
-        });
-
-        senhaInput.addEventListener("keydown", function(e) {
-            if (e.key === "Enter") {
-                confirmarSenha.click();
-            }
-        });
-
         let tempoRestante = 90 * 60;
         let intervaloCronometro;
+        let saiuDaAba = false;
         let contadorSaidas = 0;
 
         const cronometro = document.getElementById("cronometro");
         const alerta = document.getElementById("alerta");
         const alertaTempo = document.getElementById("alertaTempo");
+        const iniciarBtn = document.getElementById("iniciar");
         const iframe = document.getElementById("form");
         const mensagem = document.getElementById("mensagem");
+        const bloqueioFinal = document.getElementById("bloqueioFinal");
 
         function entrarEmTelaCheia() {
             const el = document.documentElement;
@@ -165,27 +119,41 @@
             if (tempoRestante > 0) {
                 tempoRestante--;
             } else {
-                clearInterval(intervaloCronometro);
-                mensagem.style.display = "block";
-                mensagem.innerText = "⏰ Tempo esgotado. A prova foi encerrada.";
-                setTimeout(() => location.href = 'about:blank', 1000);
+                encerrarProva("⏰ Tempo esgotado. A prova foi encerrada.");
             }
         }
 
         function aplicarPenalizacao() {
             contadorSaidas++;
-            if (contadorSaidas >= 3) {
-                clearInterval(intervaloCronometro);
-                location.href = 'about:blank';
-            } else {
-                alerta.style.display = "block";
+            alerta.style.display = "block";
+
+            if (contadorSaidas < 3) {
                 tempoRestante = Math.max(tempoRestante - 1800, 0);
+                saiuDaAba = true;
+            } else {
+                encerrarProva("⚠️ Saiu da aba ou da tela cheia 3 vezes. A prova foi encerrada.");
             }
+        }
+
+        function encerrarProva(mensagemFinal) {
+            clearInterval(intervaloCronometro);
+            iframe.style.display = 'none';
+            bloqueioFinal.style.display = 'block';
+            bloqueioFinal.innerText = mensagemFinal;
+            document.exitFullscreen?.();
         }
 
         document.addEventListener("visibilitychange", function () {
             if (document.hidden) {
                 aplicarPenalizacao();
+            } else {
+                if (saiuDaAba && contadorSaidas < 3) {
+                    alerta.style.display = "none";
+                    mensagem.style.display = "block";
+                    mensagem.innerText = `⚠️ Penalização aplicada (${contadorSaidas}ª vez).`;
+                    setTimeout(() => mensagem.style.display = "none", 3000);
+                    saiuDaAba = false;
+                }
             }
         });
 
@@ -198,15 +166,12 @@
         iniciarBtn.addEventListener("click", function () {
             iniciarBtn.style.display = 'none';
             iframe.style.display = 'block';
-            cronometro.style.display = 'block';
             entrarEmTelaCheia();
             intervaloCronometro = setInterval(atualizarCronometro, 1000);
         });
 
-        // Bloqueia botão direito
         document.addEventListener('contextmenu', event => event.preventDefault());
 
-        // Bloqueia F12, Ctrl+U, Ctrl+Shift+I/J
         document.addEventListener('keydown', function (e) {
             if (
                 e.key === "F12" ||
