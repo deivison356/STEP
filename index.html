@@ -73,7 +73,7 @@
 </head>
 <body>
 
-<div id="cronometro">Tempo restante: 90:00</div>
+<div id="cronometro">Tempo restante: 120:00</div>
 <div id="alerta">⚠️ Você saiu da aba ou da tela cheia. Penalização de 30 minutos aplicada.</div>
 <div id="alertaTempo">⚠️ Faltam apenas 20 minutos para o término da prova.</div>
 <div id="mensagem"></div>
@@ -87,7 +87,7 @@
 <iframe id="iframeProva" src="https://docs.google.com/forms/d/e/1FAIpQLSfTH8OBK_0T3HNO9CqTGqKSjXcjxpKJJ0PImnJceY6R7usQ-A/viewform?embedded=true"></iframe>
 
 <script>
-    let tempoRestante = 90 * 60;
+    let tempoRestante = 120 * 60;
     let intervaloCronometro;
     let contadorSaidas = 0;
     let saiuDaAba = false;
@@ -108,19 +108,11 @@
         const senhaCorreta = dia + mes + ano;
 
         if (senhaDigitada === senhaCorreta) {
-            // Esconde o formulário de acesso
             acesso.style.display = 'none';
-
-            // Exibe o iframe e cronômetro
             iframe.style.display = 'block';
             cronometro.style.display = 'block';
-
-            // Entra em tela cheia
             entrarEmTelaCheia();
-
-            // Inicia o cronômetro
             intervaloCronometro = setInterval(atualizarCronometro, 1000);
-
         } else {
             alert('Senha incorreta!');
         }
@@ -198,7 +190,6 @@
         }
     });
 
-    // Bloquear contexto e teclas específicas
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.addEventListener('keydown', function (e) {
         if (
