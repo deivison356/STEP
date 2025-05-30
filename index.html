@@ -4,26 +4,71 @@
     <meta charset="UTF-8">
     <title>Prova Online</title>
     <style>
-        html, body { margin: 0; padding: 0; height: 100%; font-family: Arial, sans-serif; background: #f5f5f5; }
+        html, body {
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            font-family: Arial, sans-serif; 
+            background: #f5f5f5; 
+        }
+
         #cronometro, #alerta, #alertaTempo, #mensagem {
-            display: none; position: fixed; top: 0; left: 0; width: 100%;
-            background-color: #d32f2f; color: white; text-align: center;
-            padding: 10px; font-weight: bold; z-index: 9999;
+            display: none; 
+            position: fixed;
+            top: 0; 
+            left: 0;
+            width: 100%;
+            background-color: #d32f2f; 
+            color: white; 
+            text-align: center; 
+            padding: 10px; 
+            font-weight: bold; 
+            z-index: 9999;
         }
-        #cronometro { background-color: #222; top: 0; }
+
+        #cronometro {
+            background-color: #222; 
+            top: 0; 
+        }
+
         #acesso {
-            width: 100%; max-width: 600px; margin: 80px auto 40px auto; padding: 20px;
-            background: white; box-sizing: border-box; border-radius: 8px;
-            text-align: center; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            margin: 80px auto 40px auto;
+            padding: 20px;
+            background: white;
+            box-sizing: border-box;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
+
         input, button {
-            padding: 10px; font-size: 16px; margin: 5px; width: 80%; max-width: 400px; box-sizing: border-box;
+            padding: 10px; 
+            font-size: 16px; 
+            margin: 5px;
+            width: 80%;
+            max-width: 400px;
+            box-sizing: border-box;
         }
+
         button {
-            cursor: pointer; background-color: #007bff; color: white; border: none;
-            border-radius: 6px; font-size: 18px; padding: 12px 20px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            padding: 12px 20px;
         }
-        #iframeProva { width: 100%; height: calc(100vh - 60px); border: none; display: none; margin-top: 60px; }
+
+        #iframeProva {
+            width: 100%;
+            height: calc(100vh - 60px);
+            border: none;
+            display: none;
+            margin-top: 60px;
+        }
     </style>
 </head>
 <body>
@@ -56,9 +101,11 @@
 
     function validarSenha() {
         const senhaDigitada = document.getElementById('senha').value;
-
-        // ✅ Defina aqui a senha da data da prova
-        const senhaCorreta = "10062025";  // Exemplo: 10/06/2025
+        const hoje = new Date();
+        const dia = String(hoje.getDate()).padStart(2, '0');
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+        const ano = hoje.getFullYear();
+        const senhaCorreta = dia + mes + ano;
 
         if (senhaDigitada === senhaCorreta) {
             acesso.style.display = 'none';
