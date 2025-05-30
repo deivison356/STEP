@@ -87,7 +87,7 @@
 <iframe id="iframeProva" src="https://docs.google.com/forms/d/e/1FAIpQLSfTH8OBK_0T3HNO9CqTGqKSjXcjxpKJJ0PImnJceY6R7usQ-A/viewform?embedded=true"></iframe>
 
 <script>
-    let tempoRestante = 120 * 60;
+    let tempoRestante = 120 * 60; // 2 horas
     let intervaloCronometro;
     let contadorSaidas = 0;
     let saiuDaAba = false;
@@ -131,7 +131,7 @@
     function atualizarCronometro() {
         const minutos = Math.floor(tempoRestante / 60);
         const segundos = tempoRestante % 60;
-        cronometro.textContent = Tempo restante: ${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')};
+        cronometro.textContent = `Tempo restante: ${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
 
         if (tempoRestante === 20 * 60) {
             alertaTempo.style.display = "block";
@@ -165,7 +165,9 @@
         mensagem.style.display = 'block';
         mensagem.innerText = "Prova encerrada por tentativa de fraude.";
 
-        document.exitFullscreen?.();
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
 
         setTimeout(() => {
             window.close();
@@ -178,7 +180,7 @@
         } else if (saiuDaAba && contadorSaidas < 3) {
             alerta.style.display = "none";
             mensagem.style.display = "block";
-            mensagem.innerText = ⚠️ Penalização aplicada (${contadorSaidas}ª vez).;
+            mensagem.innerText = `⚠️ Penalização aplicada (${contadorSaidas}ª vez).`;
             setTimeout(() => mensagem.style.display = "none", 3000);
             saiuDaAba = false;
         }
@@ -191,6 +193,7 @@
     });
 
     document.addEventListener('contextmenu', event => event.preventDefault());
+
     document.addEventListener('keydown', function (e) {
         if (
             e.key === "F12" ||
