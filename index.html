@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<title>Prova Online com Calculadora</title>
+<title>Prova Online com Melhorias</title>
 <style>
   html, body {
     margin: 0; padding: 0; height: 100%; font-family: Arial, sans-serif; background: #f5f5f5;
@@ -31,13 +31,11 @@
   #iframeProva {
     width: 100%; height: calc(100vh - 60px); border: none; display: none; margin-top: 60px;
   }
-
-  /* Calculadora no canto inferior direito */
   #calculadora {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    width: 220px;
+    width: 240px;
     background: #222;
     padding: 15px;
     border-radius: 8px;
@@ -46,7 +44,7 @@
     font-family: Arial, sans-serif;
     z-index: 11000;
   }
-  #calculadora div.title {
+  #calculadora .title {
     margin-bottom: 10px;
     font-weight: bold;
     font-size: 16px;
@@ -57,11 +55,16 @@
     border: none; margin-bottom: 10px; text-align: right;
     background: #333; color: white;
   }
+  #calculadora .row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
   #calculadora button {
-    width: 25%;
+    flex: 1;
     padding: 10px;
+    margin: 2px;
     font-size: 18px;
-    margin: 1px 0;
     background: #444;
     border: none;
     color: white;
@@ -78,7 +81,7 @@
 
 <div id="cronometro">Tempo restante: 90:00</div>
 <div id="alerta">⚠️ Você saiu da aba ou da tela cheia. Penalização aplicada.</div>
-<div id="alertaTempo">⚠️ Faltam apenas 20 minutos para o término da prova.</div>
+<div id="alertaTempo">⚠️ Faltam apenas 10 minutos para o término da prova.</div>
 <div id="mensagem"></div>
 
 <div id="acesso">
@@ -87,46 +90,52 @@
   <button id="btnIniciar">Iniciar Prova</button>
 </div>
 
-<iframe
-  id="iframeProva"
-  src="https://docs.google.com/forms/d/e/1FAIpQLSfTH8OBK_0T3HNO9CqTGqKSjXcjxpKJJ0PImnJceY6R7usQ-A/viewform?usp=header"
-></iframe>
+<iframe id="iframeProva" src="https://docs.google.com/forms/d/e/1FAIpQLSfTH8OBK_0T3HNO9CqTGqKSjXcjxpKJJ0PImnJceY6R7usQ-A/viewform?embedded=true"></iframe>
 
 <!-- Calculadora -->
 <div id="calculadora">
   <div class="title">Calculadora</div>
   <input type="text" id="calcDisplay" readonly />
-  <div>
+  <div class="row">
+    <button onclick="calcPress('+')">+</button>
+    <button onclick="calcPress('-')">−</button>
+    <button onclick="calcPress('*')">×</button>
+    <button onclick="calcPress('/')">÷</button>
+  </div>
+  <div class="row">
     <button onclick="calcPress('7')">7</button>
     <button onclick="calcPress('8')">8</button>
     <button onclick="calcPress('9')">9</button>
-    <button onclick="calcPress('/')">÷</button>
+    <button onclick="calcClear()">C</button>
   </div>
-  <div>
+  <div class="row">
     <button onclick="calcPress('4')">4</button>
     <button onclick="calcPress('5')">5</button>
     <button onclick="calcPress('6')">6</button>
-    <button onclick="calcPress('*')">×</button>
+    <button onclick="calcPress('(')">(</button>
   </div>
-  <div>
+  <div class="row">
     <button onclick="calcPress('1')">1</button>
     <button onclick="calcPress('2')">2</button>
     <button onclick="calcPress('3')">3</button>
-    <button onclick="calcPress('-')">−</button>
+    <button onclick="calcPress(')')">)</button>
   </div>
-  <div>
+  <div class="row">
     <button onclick="calcPress('0')">0</button>
-    <button onclick="calcClear()">C</button>
-    <button onclick="calcCalculate()">=</button>
-    <button onclick="calcPress('+')">+</button>
+    <button onclick="calcPress('.')">.</button>
+    <button onclick="calcCalculate()" style="flex: 2;">=</button>
   </div>
 </div>
 
+<!-- Áudios -->
+<audio id="somPenalidade" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+<audio id="somAviso" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+<audio id="somErro" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"></audio>
+
 <script>
-  // Prova
-  let tempoRestante = 90 * 60; // 90 minutos
+  let tempoRestante = localStorage.getItem("tempoRestante") ? parseInt(localStorage.getItem("tempoRestante")) : 90 * 60;
+  let contadorSaidas = localStorage.getItem("contadorSaidas") ? parseInt(localStorage.getItem("contadorSaidas")) : 0;
   let intervaloCronometro;
-  let contadorSaidas = 0;
   let saiuDaAba = false;
 
   const cronometro = document.getElementById("cronometro");
@@ -136,6 +145,9 @@
   const mensagem = document.getElementById("mensagem");
   const acesso = document.getElementById("acesso");
   const btnIniciar = document.getElementById("btnIniciar");
+  const somPenalidade = document.getElementById("somPenalidade");
+  const somAviso = document.getElementById("somAviso");
+  const somErro = document.getElementById("somErro");
 
   btnIniciar.addEventListener('click', function(event) {
     event.preventDefault();
@@ -163,12 +175,7 @@
 
   function entrarEmTelaCheia() {
     const el = document.documentElement;
-    if (el.requestFullscreen) {
-      el.requestFullscreen().catch(() => {
-        mensagem.style.display = "block";
-        mensagem.innerText = "⚠️ Não foi possível ativar o modo tela cheia.";
-      });
-    }
+    if (el.requestFullscreen) el.requestFullscreen();
   }
 
   function atualizarCronometro() {
@@ -176,12 +183,14 @@
     const segundos = tempoRestante % 60;
     cronometro.textContent = `Tempo restante: ${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
 
-    if (tempoRestante === 20 * 60) {
+    if (tempoRestante === 10 * 60) {
       alertaTempo.style.display = "block";
+      somAviso.play();
     }
 
     if (tempoRestante > 0) {
       tempoRestante--;
+      localStorage.setItem("tempoRestante", tempoRestante);
     } else {
       encerrarProva();
     }
@@ -190,15 +199,15 @@
   function aplicarPenalizacao() {
     contadorSaidas++;
     alerta.style.display = "block";
+    somPenalidade.play();
 
-    // Penalização:
-    // se tempo > 30 minutos, desconta 30 minutos (1800s)
-    // se tempo <= 30 minutos, desconta 10 minutos (600s)
-    let penalidade = tempoRestante > (30 * 60) ? 1800 : 600;
+    let penalidade = tempoRestante > 30 * 60 ? 1800 : 600;
 
     if (contadorSaidas < 3) {
       tempoRestante = Math.max(tempoRestante - penalidade, 0);
       saiuDaAba = true;
+      localStorage.setItem("tempoRestante", tempoRestante);
+      localStorage.setItem("contadorSaidas", contadorSaidas);
     } else {
       encerrarProva();
     }
@@ -206,23 +215,21 @@
 
   function encerrarProva() {
     clearInterval(intervaloCronometro);
+    somErro.play();
     iframe.style.display = 'none';
     cronometro.style.display = 'none';
     alerta.style.display = 'none';
     alertaTempo.style.display = 'none';
     mensagem.style.display = 'block';
     mensagem.innerText = "Prova encerrada por tentativa de fraude.";
-
+    localStorage.clear();
     document.exitFullscreen?.();
-    setTimeout(() => {
-      window.close();
-    }, 1500);
+    setTimeout(() => window.close(), 1500);
   }
 
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      aplicarPenalizacao();
-    } else if (saiuDaAba && contadorSaidas < 3) {
+    if (document.hidden) aplicarPenalizacao();
+    else if (saiuDaAba && contadorSaidas < 3) {
       alerta.style.display = "none";
       mensagem.style.display = "block";
       mensagem.innerText = `⚠️ Penalização aplicada (${contadorSaidas}ª vez).`;
@@ -232,9 +239,7 @@
   });
 
   document.addEventListener("fullscreenchange", () => {
-    if (!document.fullscreenElement) {
-      aplicarPenalizacao();
-    }
+    if (!document.fullscreenElement) aplicarPenalizacao();
   });
 
   document.addEventListener('contextmenu', e => e.preventDefault());
@@ -266,7 +271,7 @@
 
   function calcCalculate() {
     try {
-      let resultado = eval(calcExpression);
+      let resultado = Function(`"use strict"; return (${calcExpression})`)();
       document.getElementById('calcDisplay').value = resultado;
       calcExpression = resultado.toString();
     } catch {
@@ -275,6 +280,5 @@
     }
   }
 </script>
-
 </body>
 </html>
