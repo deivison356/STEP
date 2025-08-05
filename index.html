@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Prova Online</title>
   <style>
     html, body {
@@ -82,7 +82,7 @@
 </head>
 <body>
   <div class="top-bar">
-    <div id="timer">Tempo restante: 60:00</div>
+    <div id="timer">Tempo restante: 90:00</div>
     <button class="toggle-btn" onclick="toggleTheme()">🌙 Modo Escuro / ☀️ Modo Claro</button>
   </div>
   <button id="startBtn" onclick="startExam()">Iniciar Prova</button>
@@ -122,11 +122,10 @@
   <div id="notification" class="notification" style="display:none;">Você foi penalizado por sair da aba!</div>
 
   <script>
-    let totalTime = 60 * 60; // 60 minutos em segundos
+    let totalTime = 90 * 60; // 90 minutos em segundos
     let penalizationsLeft = 3;
     let timerInterval;
     let currentTime = totalTime;
-    let leftPage = false;
 
     function startExam() {
       document.getElementById('startBtn').style.display = 'none';
@@ -136,6 +135,7 @@
     }
 
     function startTimer() {
+      updateTimerDisplay(); // Atualiza na hora do start
       timerInterval = setInterval(() => {
         currentTime--;
         updateTimerDisplay();
@@ -156,9 +156,9 @@
     document.addEventListener('visibilitychange', () => {
       if (document.hidden && penalizationsLeft > 0) {
         if (currentTime <= 30 * 60) {
-          currentTime -= 600;
+          currentTime -= 600; // 10 minutos
         } else {
-          currentTime -= 1800;
+          currentTime -= 1800; // 30 minutos
         }
         penalizationsLeft--;
         showNotification();
