@@ -9,192 +9,188 @@
       padding: 0;
       height: 100%;
       font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      color: #000;
-      transition: background-color 0.3s, color 0.3s;
+      background: #f5f5f5;
     }
+
     body.dark {
-      background-color: #1e1e1e;
+      background: #121212;
       color: #fff;
     }
-    .top-bar {
+
+    #acesso, #cronometro, #calculadora, #iframe, #modoEscuroToggle {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
-      padding: 10px;
-      background: #007bff;
-      color: white;
+      margin-top: 20px;
     }
-    .toggle-btn {
-      background: #fff;
-      border: none;
-      padding: 5px 10px;
-      cursor: pointer;
-    }
-    #timer {
-      font-size: 18px;
-      font-weight: bold;
-    }
-    #startBtn {
-      margin: 50px auto;
-      display: block;
-      padding: 20px;
-      font-size: 24px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
+
     iframe {
-      width: 100%;
-      height: calc(100vh - 100px);
+      width: 90%;
+      height: 500px;
       border: none;
+      display: none;
     }
-    .notification {
+
+    #calculadora {
       position: fixed;
-      top: 80px;
+      top: 20px;
       right: 20px;
-      background-color: red;
-      color: white;
-      padding: 10px;
-      font-weight: bold;
-      z-index: 9999;
-    }
-    .calculator {
-      position: fixed;
-      bottom: 10px;
-      left: 10px;
-      background: white;
+      background: #fff;
       border: 1px solid #ccc;
       padding: 10px;
-      z-index: 9999;
+      z-index: 1000;
     }
-    .calculator input {
-      width: 100px;
-      margin: 5px;
+
+    body.dark #calculadora {
+      background: #333;
+      border-color: #666;
     }
-    .calculator button {
-      margin: 3px;
+
+    #calculadora button {
       width: 40px;
       height: 40px;
+      margin: 2px;
+    }
+
+    #modoEscuroToggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
     }
   </style>
 </head>
 <body>
-  <div class="top-bar">
-    <div id="timer">Tempo restante: 60:00</div>
-    <button class="toggle-btn" onclick="toggleTheme()">🌙 Modo Escuro / ☀️ Modo Claro</button>
-  </div>
-  <button id="startBtn" onclick="startExam()">Iniciar Prova</button>
-
-  <div class="calculator" id="calculator">
-    <input type="text" id="calcDisplay" disabled><br>
-    <div>
-      <button onclick="press('+')">+</button>
-      <button onclick="press('-')">-</button>
-      <button onclick="press('*')">*</button>
-      <button onclick="press('/')">/</button>
-    </div>
-    <div>
-      <button onclick="press('7')">7</button>
-      <button onclick="press('8')">8</button>
-      <button onclick="press('9')">9</button>
-    </div>
-    <div>
-      <button onclick="press('4')">4</button>
-      <button onclick="press('5')">5</button>
-      <button onclick="press('6')">6</button>
-    </div>
-    <div>
-      <button onclick="press('1')">1</button>
-      <button onclick="press('2')">2</button>
-      <button onclick="press('3')">3</button>
-    </div>
-    <div>
-      <button onclick="press('0')">0</button>
-      <button onclick="clearCalc()">C</button>
-      <button onclick="calculate()">=</button>
-    </div>
+  <div id="acesso">
+    <h2>Digite a senha para iniciar a prova</h2>
+    <input type="password" id="senha" placeholder="Senha (ddmmaaaa)">
+    <button id="btnIniciar">Iniciar Prova</button>
   </div>
 
-  <iframe id="examFrame" src="" style="display:none;"></iframe>
+  <div id="cronometro" style="display:none; font-size: 24px;"></div>
 
-  <div id="notification" class="notification" style="display:none;">Você foi penalizado por sair da aba!</div>
+  <iframe id="iframe" src="https://docs.google.com/forms/d/e/1FAIpQLSfTH8OBK_0T3HNO9CqTGqKSjXcjxpKJJ0PImnJceY6R7usQ-A/viewform?usp=header"></iframe>
+
+  <div id="calculadora">
+    <input type="text" id="visor" readonly style="width: 170px; margin-bottom: 5px; text-align: right;">
+    <div>
+      <button onclick="adicionar('+')">+</button>
+      <button onclick="adicionar('-')">-</button>
+      <button onclick="adicionar('*')">*</button>
+      <button onclick="adicionar('/')">/</button>
+    </div>
+    <div>
+      <button onclick="adicionar('7')">7</button>
+      <button onclick="adicionar('8')">8</button>
+      <button onclick="adicionar('9')">9</button>
+      <button onclick="limpar()">C</button>
+    </div>
+    <div>
+      <button onclick="adicionar('4')">4</button>
+      <button onclick="adicionar('5')">5</button>
+      <button onclick="adicionar('6')">6</button>
+      <button onclick="calcular()">=</button>
+    </div>
+    <div>
+      <button onclick="adicionar('1')">1</button>
+      <button onclick="adicionar('2')">2</button>
+      <button onclick="adicionar('3')">3</button>
+      <button onclick="adicionar('0')">0</button>
+    </div>
+  </div>
+
+  <div id="modoEscuroToggle">
+    <label><input type="checkbox" onchange="toggleModoEscuro()"> Modo Escuro</label>
+  </div>
+
+  <audio id="alertaAudio" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" preload="auto"></audio>
 
   <script>
-    let totalTime = 60 * 60; // 60 minutos em segundos
-    let penalizationsLeft = 3;
-    let timerInterval;
-    let currentTime = totalTime;
-    let leftPage = false;
+    const btnIniciar = document.getElementById('btnIniciar');
+    const acesso = document.getElementById('acesso');
+    const iframe = document.getElementById('iframe');
+    const cronometro = document.getElementById('cronometro');
+    const alertaAudio = document.getElementById('alertaAudio');
 
-    function startExam() {
-      document.getElementById('startBtn').style.display = 'none';
-      document.getElementById('examFrame').style.display = 'block';
-      document.getElementById('examFrame').src = "https://docs.google.com/forms/d/e/1FAIpQLSfTH8OBK_0T3HNO9CqTGqKSjXcjxpKJJ0PImnJceY6R7usQ-A/viewform?usp=header";
-      startTimer();
+    let tempoRestante = 60 * 60;
+    let intervaloCronometro;
+    let penalidades = 0;
+    const maxPenalidades = 3;
+
+    function atualizarCronometro() {
+      const minutos = Math.floor(tempoRestante / 60);
+      const segundos = tempoRestante % 60;
+      cronometro.textContent = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+      tempoRestante--;
+
+      if (tempoRestante < 0) {
+        clearInterval(intervaloCronometro);
+        alert("Tempo esgotado! A prova será encerrada.");
+        window.close();
+      }
     }
 
-    function startTimer() {
-      timerInterval = setInterval(() => {
-        currentTime--;
-        updateTimerDisplay();
-        if (currentTime <= 0) {
-          clearInterval(timerInterval);
-          alert("Tempo esgotado. A prova será encerrada.");
-          window.close();
-        }
-      }, 1000);
+    function entrarEmTelaCheia() {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      }
     }
 
-    function updateTimerDisplay() {
-      const minutes = String(Math.floor(currentTime / 60)).padStart(2, '0');
-      const seconds = String(currentTime % 60).padStart(2, '0');
-      document.getElementById('timer').textContent = `Tempo restante: ${minutes}:${seconds}`;
+    function validarSenha() {
+      const senhaDigitada = document.getElementById('senha').value.trim();
+      const hoje = new Date();
+      const dia = String(hoje.getDate()).padStart(2, '0');
+      const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+      const ano = hoje.getFullYear();
+      const senhaCorreta = dia + mes + ano;
+
+      if (senhaDigitada === senhaCorreta) {
+        acesso.style.display = 'none';
+        iframe.style.display = 'block';
+        cronometro.style.display = 'block';
+        entrarEmTelaCheia();
+        intervaloCronometro = setInterval(atualizarCronometro, 1000);
+      } else {
+        alert('Senha incorreta!');
+      }
     }
 
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden && penalizationsLeft > 0) {
-        if (currentTime <= 30 * 60) {
-          currentTime -= 600;
+    btnIniciar.addEventListener('click', validarSenha);
+
+    window.onblur = () => {
+      if (penalidades < maxPenalidades) {
+        penalidades++;
+        alertaAudio.play();
+        if (tempoRestante <= 30 * 60) {
+          tempoRestante -= 10 * 60;
         } else {
-          currentTime -= 1800;
+          tempoRestante = 0;
         }
-        penalizationsLeft--;
-        showNotification();
-        if (penalizationsLeft === 0) {
-          alert("Você excedeu o número de penalizações. A prova será encerrada.");
-          window.close();
-        }
+        alert(`Você saiu da aba! Penalidade ${penalidades}/${maxPenalidades}.`);
+      } else {
+        clearInterval(intervaloCronometro);
+        alert("Você excedeu o número de saídas permitidas. A prova será encerrada.");
+        window.close();
       }
-    });
+    };
 
-    function showNotification() {
-      const notification = document.getElementById('notification');
-      notification.style.display = 'block';
-      setTimeout(() => {
-        notification.style.display = 'none';
-      }, 5000);
+    function adicionar(valor) {
+      document.getElementById('visor').value += valor;
     }
 
-    function toggleTheme() {
-      document.body.classList.toggle('dark');
+    function limpar() {
+      document.getElementById('visor').value = '';
     }
 
-    // Calculadora
-    let calcDisplay = document.getElementById("calcDisplay");
-    function press(value) {
-      calcDisplay.value += value;
-    }
-    function clearCalc() {
-      calcDisplay.value = "";
-    }
-    function calculate() {
+    function calcular() {
       try {
-        calcDisplay.value = eval(calcDisplay.value);
-      } catch (e) {
-        calcDisplay.value = "Erro";
+        document.getElementById('visor').value = eval(document.getElementById('visor').value);
+      } catch {
+        document.getElementById('visor').value = 'Erro';
       }
+    }
+
+    function toggleModoEscuro() {
+      document.body.classList.toggle('dark');
     }
   </script>
 </body>
