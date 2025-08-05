@@ -1,201 +1,228 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Prova Online</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      color: #000;
-      transition: background-color 0.3s, color 0.3s;
-    }
-    body.dark {
-      background-color: #1e1e1e;
-      color: #fff;
-    }
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-      background: #007bff;
-      color: white;
-    }
-    .toggle-btn {
-      background: #fff;
-      border: none;
-      padding: 5px 10px;
-      cursor: pointer;
-    }
-    #timer {
-      font-size: 18px;
-      font-weight: bold;
-    }
-    #startBtn {
-      margin: 50px auto;
-      display: block;
-      padding: 20px;
-      font-size: 24px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    iframe {
-      width: 100%;
-      height: calc(100vh - 100px);
-      border: none;
-    }
-    .notification {
-      position: fixed;
-      top: 80px;
-      right: 20px;
-      background-color: red;
-      color: white;
-      padding: 10px;
-      font-weight: bold;
-      z-index: 9999;
-    }
-    .calculator {
-      position: fixed;
-      bottom: 10px;
-      left: 10px;
-      background: white;
-      border: 1px solid #ccc;
-      padding: 10px;
-      z-index: 9999;
-    }
-    .calculator input {
-      width: 100px;
-      margin: 5px;
-    }
-    .calculator button {
-      margin: 3px;
-      width: 40px;
-      height: 40px;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <title>Prova Online</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+
+        #cronometro {
+            background-color: #222;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-size: 18px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10000;
+            display: none;
+        }
+
+        #alerta, #alertaTempo, #mensagem {
+            display: none;
+            position: fixed;
+            top: 40px;
+            left: 0;
+            width: 100%;
+            background-color: #d32f2f;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            z-index: 9999;
+        }
+
+        #acesso {
+            width: 100%;
+            max-width: 600px;
+            margin: 100px auto 40px auto;
+            padding: 20px;
+            background: white;
+            box-sizing: border-box;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+            margin: 5px;
+            width: 80%;
+            max-width: 400px;
+            box-sizing: border-box;
+        }
+
+        button {
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            padding: 12px 20px;
+        }
+
+        #iframeProva {
+            width: 100%;
+            height: calc(100vh - 60px);
+            border: none;
+            display: none;
+            margin-top: 60px;
+        }
+    </style>
 </head>
 <body>
-  <div class="top-bar">
-    <div id="timer">Tempo restante: 90:00</div>
-    <button class="toggle-btn" onclick="toggleTheme()">🌙 Modo Escuro / ☀️ Modo Claro</button>
-  </div>
-  <button id="startBtn" onclick="startExam()">Iniciar Prova</button>
 
-  <div class="calculator" id="calculator">
-    <input type="text" id="calcDisplay" disabled><br>
-    <div>
-      <button onclick="press('+')">+</button>
-      <button onclick="press('-')">-</button>
-      <button onclick="press('*')">*</button>
-      <button onclick="press('/')">/</button>
-    </div>
-    <div>
-      <button onclick="press('7')">7</button>
-      <button onclick="press('8')">8</button>
-      <button onclick="press('9')">9</button>
-    </div>
-    <div>
-      <button onclick="press('4')">4</button>
-      <button onclick="press('5')">5</button>
-      <button onclick="press('6')">6</button>
-    </div>
-    <div>
-      <button onclick="press('1')">1</button>
-      <button onclick="press('2')">2</button>
-      <button onclick="press('3')">3</button>
-    </div>
-    <div>
-      <button onclick="press('0')">0</button>
-      <button onclick="clearCalc()">C</button>
-      <button onclick="calculate()">=</button>
-    </div>
-  </div>
+<div id="cronometro">Tempo restante: 90:00</div>
+<div id="alerta">⚠️ Você saiu da aba ou da tela cheia. Penalização aplicada.</div>
+<div id="alertaTempo">⚠️ Faltam apenas 20 minutos para o término da prova.</div>
+<div id="mensagem"></div>
 
-  <iframe id="examFrame" src="" style="display:none;"></iframe>
+<div id="acesso">
+    <h2>Digite a senha para iniciar a prova</h2>
+    <input type="password" id="senha" placeholder="Senha" />
+    <button id="btnIniciar">Iniciar Prova</button>
+</div>
 
-  <div id="notification" class="notification" style="display:none;">Você foi penalizado por sair da aba!</div>
+<iframe
+  id="iframeProva"
+  src="https://docs.google.com/forms/d/e/1FAIpQLSfTH8OBK_0T3HNO9CqTGqKSjXcjxpKJJ0PImnJceY6R7usQ-A/viewform?embedded=true"
+></iframe>
 
-  <script>
-    let totalTime = 90 * 60; // 90 minutos em segundos
-    let penalizationsLeft = 3;
-    let timerInterval;
-    let currentTime = totalTime;
+<script>
+    let tempoRestante = 90 * 60; // 90 minutos em segundos
+    let intervaloCronometro;
+    let contadorSaidas = 0;
+    let saiuDaAba = false;
 
-    function startExam() {
-      document.getElementById('startBtn').style.display = 'none';
-      document.getElementById('examFrame').style.display = 'block';
-      document.getElementById('examFrame').src = "https://docs.google.com/forms/d/e/1FAIpQLSfTH8OBK_0T3HNO9CqTGqKSjXcjxpKJJ0PImnJceY6R7usQ-A/viewform?usp=header";
-      startTimer();
-    }
+    const cronometro = document.getElementById("cronometro");
+    const alerta = document.getElementById("alerta");
+    const alertaTempo = document.getElementById("alertaTempo");
+    const iframe = document.getElementById("iframeProva");
+    const mensagem = document.getElementById("mensagem");
+    const acesso = document.getElementById("acesso");
+    const btnIniciar = document.getElementById("btnIniciar");
 
-    function startTimer() {
-      updateTimerDisplay(); // Atualiza na hora do start
-      timerInterval = setInterval(() => {
-        currentTime--;
-        updateTimerDisplay();
-        if (currentTime <= 0) {
-          clearInterval(timerInterval);
-          alert("Tempo esgotado. A prova será encerrada.");
-          window.close();
-        }
-      }, 1000);
-    }
-
-    function updateTimerDisplay() {
-      const minutes = String(Math.floor(currentTime / 60)).padStart(2, '0');
-      const seconds = String(currentTime % 60).padStart(2, '0');
-      document.getElementById('timer').textContent = `Tempo restante: ${minutes}:${seconds}`;
-    }
-
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden && penalizationsLeft > 0) {
-        if (currentTime <= 30 * 60) {
-          currentTime -= 600; // 10 minutos
-        } else {
-          currentTime -= 1800; // 30 minutos
-        }
-        penalizationsLeft--;
-        showNotification();
-        if (penalizationsLeft === 0) {
-          alert("Você excedeu o número de penalizações. A prova será encerrada.");
-          window.close();
-        }
-      }
+    btnIniciar.addEventListener('click', function(event) {
+        event.preventDefault();
+        validarSenha();
     });
 
-    function showNotification() {
-      const notification = document.getElementById('notification');
-      notification.style.display = 'block';
-      setTimeout(() => {
-        notification.style.display = 'none';
-      }, 5000);
+    function validarSenha() {
+        const senhaDigitada = document.getElementById('senha').value.trim();
+        const hoje = new Date();
+        const dia = String(hoje.getDate()).padStart(2, '0');
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+        const ano = hoje.getFullYear();
+        const senhaCorreta = dia + mes + ano;
+
+        if (senhaDigitada === senhaCorreta) {
+            acesso.style.display = 'none';
+            iframe.style.display = 'block';
+            cronometro.style.display = 'block';
+            entrarEmTelaCheia();
+            intervaloCronometro = setInterval(atualizarCronometro, 1000);
+        } else {
+            alert('Senha incorreta!');
+        }
     }
 
-    function toggleTheme() {
-      document.body.classList.toggle('dark');
+    function entrarEmTelaCheia() {
+        const el = document.documentElement;
+        if (el.requestFullscreen) {
+            el.requestFullscreen().catch(() => {
+                mensagem.style.display = "block";
+                mensagem.innerText = "⚠️ Não foi possível ativar o modo tela cheia.";
+            });
+        }
     }
 
-    // Calculadora
-    let calcDisplay = document.getElementById("calcDisplay");
-    function press(value) {
-      calcDisplay.value += value;
+    function atualizarCronometro() {
+        const minutos = Math.floor(tempoRestante / 60);
+        const segundos = tempoRestante % 60;
+        cronometro.textContent = `Tempo restante: ${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+
+        if (tempoRestante === 20 * 60) {
+            alertaTempo.style.display = "block";
+        }
+
+        if (tempoRestante > 0) {
+            tempoRestante--;
+        } else {
+            encerrarProva();
+        }
     }
-    function clearCalc() {
-      calcDisplay.value = "";
+
+    function aplicarPenalizacao() {
+        contadorSaidas++;
+        alerta.style.display = "block";
+
+        let penalidade = tempoRestante > (30 * 60) ? 1800 : 600; // 30 min ou 10 min
+
+        if (contadorSaidas < 3) {
+            tempoRestante = Math.max(tempoRestante - penalidade, 0);
+            saiuDaAba = true;
+        } else {
+            encerrarProva();
+        }
     }
-    function calculate() {
-      try {
-        calcDisplay.value = eval(calcDisplay.value);
-      } catch (e) {
-        calcDisplay.value = "Erro";
-      }
+
+    function encerrarProva() {
+        clearInterval(intervaloCronometro);
+        iframe.style.display = 'none';
+        cronometro.style.display = 'none';
+        alerta.style.display = 'none';
+        alertaTempo.style.display = 'none';
+        mensagem.style.display = 'block';
+        mensagem.innerText = "Prova encerrada por tentativa de fraude.";
+
+        document.exitFullscreen?.();
+        setTimeout(() => {
+            window.location.href = "https://SEU_USUARIO.github.io/bloqueio.html"; // Altere SEU_USUARIO para seu usuário GitHub
+        }, 1500);
     }
-  </script>
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            aplicarPenalizacao();
+        } else if (saiuDaAba && contadorSaidas < 3) {
+            alerta.style.display = "none";
+            mensagem.style.display = "block";
+            mensagem.innerText = `⚠️ Penalização aplicada (${contadorSaidas}ª vez).`;
+            setTimeout(() => mensagem.style.display = "none", 3000);
+            saiuDaAba = false;
+        }
+    });
+
+    document.addEventListener("fullscreenchange", () => {
+        if (!document.fullscreenElement) {
+            aplicarPenalizacao();
+        }
+    });
+
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+        if (
+            e.key === "F12" ||
+            (e.ctrlKey && e.key.toLowerCase() === 'u') ||
+            (e.ctrlKey && e.shiftKey && ['i', 'j'].includes(e.key.toLowerCase()))
+        ) {
+            e.preventDefault();
+            mensagem.style.display = "block";
+            mensagem.innerText = "⚠️ Esta função está desabilitada durante a prova.";
+            setTimeout(() => mensagem.style.display = "none", 3000);
+        }
+    });
+</script>
+
 </body>
 </html>
